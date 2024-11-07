@@ -1,4 +1,5 @@
 import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
+import { SidebarTrigger } from "@/components/ui/sidebar"
 
 import {
   Sidebar,
