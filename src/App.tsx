@@ -3,7 +3,7 @@ import "./App.css";
 import Navbar from "./components/Navbar";
 import { buildStyles, CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import axios from "axios";
 import MarkOptimization from "./components/Line";
@@ -23,6 +23,7 @@ function App() {
     pressure: number;
     humidity: number;
     air: number;
+    _id: string;
   }
 
   const [data, setData] = useState<DataItem[]>([]);
@@ -42,7 +43,7 @@ function App() {
       .then((response) => {
         console.log(response.data);
 
-        // Parse and round data, then store them in local variables
+        // const _id = response.data.feeds[0]._id.toString();
         const air = parseFloat(
           parseFloat(response.data.feeds[0].field1).toFixed(2)
         );
@@ -72,8 +73,8 @@ function App() {
             air: air,
             temperature: temperature,
             humidity: humidity,
-            pressure: pressure,
             altitude: altitude,
+            pressure: pressure,
           })
           .then((postResponse) => {
             console.log("Data posted successfully:", postResponse.data);
@@ -87,9 +88,8 @@ function App() {
       });
   };
 
-  const history = () => {};
-  console.log(history);
-
+  // const history = () => {};
+  // console.log(history);
   useEffect(() => {
     axios.get("http://localhost:3000/get").then((response) => {
       console.log(response.data);
@@ -111,17 +111,36 @@ function App() {
     }, 1500);
   }, []);
 
+  const handleItemClick = (item: any) => {
+    // console.log(item);
+    axios
+      .get(`http://localhost:3000/get/${item.url}`)
+      .then((response) => {
+        if(response.data){
+          setAir(response.data.air);
+          setTemperature(response.data.temperature);
+          setHumidity(response.data.humidity);
+          setPressure(response.data.pressure);
+          setAltitude(response.data.altitude);
+        }
+        console.log("Document found:", response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching document:", error);
+      });
+  }
+
   return (
     <div className="flex justify-center items-center">
       <SidebarProvider>
-        <AppSidebar />
+        <AppSidebar data={data} onItemClick={handleItemClick}/>
         {/* <SidebarTrigger /> */}
         <main className="w-screen ml-2">
           <Navbar />
           <div className="flex justify-center p-8 items-center">
             <button
               onClick={getData}
-              className="bg-slate-800 p-4 px-8 rounded-xl hover:bg-slate-100 hover:t"
+              className="bg-[#593d3a] p-4 px-8 rounded-xl hover:bg-[#81594d] hover:t"
             >
               Click me
             </button>
@@ -131,7 +150,8 @@ function App() {
               <RadarChart
                 data={data.slice(0, 5).map((item, index) => ({
                   subject: `${formattedDates[index]}`, // Use the formatted date for the subject
-                  A: item.air,
+                  // A: item.air,
+                  A : air,
                   B: item.humidity,
                   fullMark: 500,
                 }))}
@@ -160,8 +180,8 @@ function App() {
               <div className="border-white-100 border-l border-r px-10">
                 <CircularProgressbar
                   value={pressure}
-                  minValue={95000}
-                  maxValue={101320}
+                  minValue={9000}
+                  maxValue={151320}
                   text={`${pressure} Pa Pressure`}
                   styles={buildStyles({
                     pathTransitionDuration: 1.5,
