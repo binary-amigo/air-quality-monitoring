@@ -201,6 +201,8 @@ function App() {
                   styles={buildStyles({
                     pathTransitionDuration: 1.5,
                     textSize: "8px",
+                    pathColor: `url(#customGradient)`,
+
                   })}
                 />
               </div>
@@ -213,6 +215,8 @@ function App() {
                   styles={buildStyles({
                     pathTransitionDuration: 1.5,
                     textSize: "8px",
+                    pathColor: `url(#customGradient)`,
+
                   })}
                 />
               </div>
@@ -229,6 +233,8 @@ function App() {
                   styles={buildStyles({
                     pathTransitionDuration: 1.5,
                     textSize: "8px",
+                    pathColor: `url(#customGradient)`,
+
                   })}
                 />
               </div>
@@ -243,6 +249,7 @@ function App() {
                   styles={buildStyles({
                     pathTransitionDuration: 1.5,
                     textSize: "8px",
+                    pathColor: `url(#customGradient)`,
                   })}
                 />
               </div>
@@ -285,7 +292,7 @@ function App() {
             </div>
           </div>
         </main>
-        {/* <svg style={{ height: 0 }}>
+        <svg style={{ height: 0 }}>
           <defs>
             <linearGradient
               id="customGradient"
@@ -303,7 +310,7 @@ function App() {
               <stop offset="100%" stopColor="rgba(113,63,254,1)" />
             </linearGradient>
           </defs>
-        </svg> */}
+        </svg> 
       </SidebarProvider>
     </div>
   );
