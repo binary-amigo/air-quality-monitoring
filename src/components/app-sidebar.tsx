@@ -44,11 +44,11 @@ export function AppSidebar({ data, onItemClick }: AppSidebarProps) {
       icon: Calendar,
       subItems: data.slice(0, 30).map((item) => {
         const dateObj = new Date(item.date);
-        const formattedDate = dateObj.toLocaleDateString("en-GB").slice(0, 8);
-        const formattedTime = dateObj.toLocaleTimeString("en-GB");
+        // const formattedDate = dateObj.toLocaleDateString("en-GB").slice(0, 8);
+        // const formattedTime = dateObj.toLocaleTimeString("en-GB");
 
         return {
-          title: `${formattedDate} ${formattedTime}`,
+          title: `${dateObj.toLocaleDateString()} ${dateObj.toLocaleTimeString()}`,
           url: item._id,
         };
       }),

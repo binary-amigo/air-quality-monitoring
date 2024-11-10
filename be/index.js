@@ -75,3 +75,13 @@ app.get("/get/:id", async (req, res) => {
     res.status(404).json({ message: error.message });
   }
 });
+
+app.delete("/delete", async (req, res) => {
+  try {
+    const result = await Data.deleteMany();
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+}
+);
