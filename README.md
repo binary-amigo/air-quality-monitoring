@@ -1,8 +1,4 @@
-# React + TypeScript + Vite
-
-
-
-## Expanding the ESLint configuration
+## Neeraj Wadhwaney
 
 If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
 
