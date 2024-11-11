@@ -1,41 +1,40 @@
-## Neeraj Wadhwaney
+# Setting Up the .env File
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+To set up the `.env` file for your project, follow these steps:
 
-- Configure the top-level `parserOptions` property like this:
+1. **Create the .env file**:
+  In the root directory of your project, create a file named `.env`.
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+2. **Add environment variables**:
+  Open the `.env` file and add your environment-specific variables in the format `KEY=VALUE`. For example:
+  ```plaintext
+  VITE_THINGSPEAK_API=your-thingspeak-api
+  VITE_SERVER_URL=http://localhost:3000
+  ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+3. **Create a .env file inside the `be` folder**:
+  Navigate to the `be` folder inside your project and create another `.env` file.
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+4. **Add backend-specific environment variables**:
+  Open the `.env` file inside the `be` folder and add your backend-specific variables in the format `KEY=VALUE`. For example:
+  ```plaintext
+  PORT = 3000
+  MONGO_URI = "your-mongodb-uri"
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+  ```
+
+  # Running the Project
+
+  To run the frontend and backend of your project, follow these steps:
+
+  1. **Run the frontend**:
+    In the root directory of your project, run the following command:
+    ```sh
+    npm run dev
+    ```
+
+  2. **Run the backend**:
+    Navigate to the `be` folder inside your project and run the following command:
+    ```sh
+    nodemon --env-file=.env index.js
+    ```

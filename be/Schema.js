@@ -8,6 +8,7 @@ const dataSchema = new Schema({
     pressure: Number,
     altitude: Number,
     air: Number,
+    city: String,
     date: {
         type: String,
         default: () => {

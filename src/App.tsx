@@ -3,11 +3,12 @@ import "./App.css";
 import Navbar from "./components/Navbar";
 import { buildStyles, CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
+import AppSidebar from "./components/Sidebar";
 import axios from "axios";
 import MarkOptimization from "./components/Line";
 import RadarChart from "./components/Radar-chart";
+const SERVER_URL = import.meta.env.VITE_SERVER_URL;
+const THINGSPEAK_API_KEY = import.meta.env.VITE_THINGSPEAK_API;
 // import { useFetchOneData } from "./hooks/fetchData";
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
   const [altitude, setAltitude] = useState(0);
   const [loading, setLoading] = useState(false);
   const [itemLoading, setItemLoading] = useState(false);
+  const [selectedCity, setSelectedCity] = useState("Select City");
 
   interface DataItem {
     date: string;
@@ -27,6 +29,7 @@ function App() {
     humidity: number;
     air: number;
     _id: string;
+    city: string;
   }
 
   const [data, setData] = useState<DataItem[]>([]);
@@ -42,7 +45,7 @@ function App() {
     setLoading(true);
     axios
       .get(
-        "https://api.thingspeak.com/channels/2709347/feeds.json?api_key=LO89N2RN4ROXFUL2&results=1"
+        THINGSPEAK_API_KEY
       )
       .then((response) => {
         // console.log(response.data);
@@ -73,12 +76,13 @@ function App() {
 
         // Post data to local server using local variables
         axios
-          .post("http://localhost:3000/add", {
+          .post(`${SERVER_URL}/add`, {
             air: air,
             temperature: temperature,
             humidity: humidity,
             altitude: altitude,
             pressure: pressure,
+            city: selectedCity,
           })
           .then((postResponse) => {
             console.log("Data posted successfully:", postResponse.data);
@@ -98,29 +102,49 @@ function App() {
   // // const history = () => {};
   // // console.log(history);
   useEffect(() => {
-    for (let i = 0; i <= 100; i++) {
-      setTemperature(i);
-      setAltitude(i);
-      setPressure(i);
-      setHumidity(i);
-    }
-    setTimeout(() => {
-      for (let i = 100; i >= 0; i--) {
-        setTemperature(i);
-        setAltitude(i);
-        setPressure(i);
-        setHumidity(i);
+    const animateValues = async () => {
+      // Temporary variables to store values
+      let temp, alt, pres, hum;
+  
+      // Increment loop from 0 to 100
+      for (let i = 0; i <= 100; i++) {
+        temp = alt = pres = hum = i;
       }
-    }, 1500);
-    const fetchDataInterval = setInterval(() => {
-      axios.get("http://localhost:3000/get").then((response) => {
-        // console.log(response.data);
+  
+      // Decrement loop from 100 to 0
+      for (let i = 100; i >= 0; i--) {
+        temp = alt = pres = hum = i;
+      }
+  
+      // Set the final state after the loops are done
+      setTemperature(temperature);
+      setAltitude(altitude);
+      setPressure(pressure);
+      setHumidity(humidity);
+  
+      // Fetch data from server only after the loops are completed
+      try {
+        const response = await axios.get(`${SERVER_URL}/get`);
+        const updatedData = response.data.map((item: DataItem) => ({
+          ...item,
+          city: "Bhopal", // Add city property to each item
+        }));
+        setData(updatedData);
         setData(response.data);
-      });
-    }, 5000);
-
-    return () => clearInterval(fetchDataInterval);
+        setAir(response.data[0].air);
+        setTemperature(response.data[0].temperature);
+        setHumidity(response.data[0].humidity);
+        setPressure(response.data[0].pressure);
+        setAltitude(response.data[0].altitude);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+  
+    // Call the function to run once
+    animateValues();
   }, []);
+  
 
   const handleItemClick = (item: any) => {
     setItemLoading(true);
@@ -135,7 +159,7 @@ function App() {
     // Add a delay of 2 seconds before fetching data
     setTimeout(() => {
       axios
-        .get(`http://localhost:3000/get/${item.url}`)
+        .get(`${SERVER_URL}/get/${item.url}`)
         .then((response) => {
           if (response.data) {
             console.log("Document found:", response.data);
@@ -157,34 +181,47 @@ function App() {
     }, 2000); // 2-second delay before fetching and updating values
   };
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   return (
-    <div className="flex justify-center items-center">
-      <SidebarProvider>
-        <AppSidebar data={data} onItemClick={handleItemClick} />
-        {/* <SidebarTrigger /> */}
-        <main className="w-screen ml-2">
-          <Navbar />
-          <div className="flex justify-center p-8 items-center">
-            <button
-              onClick={getData}
-              className="bg-[#6d6d6d] p-4 px-8 rounded-xl hover:bg-[#4f4f4f] hover:t"
-            >
-              {loading ? "Loading..." : "Click me"}
-            </button>
-          </div>
-          <div className="flex items-center">
-            <div className="w-[50%] flex justify-center h-80 border p-0  border-r-2 rounded-xl mx-14">
+    <div className="h-fit flex flex-col ">
+      <Navbar
+        onSidebarToggle={toggleSidebar}
+        getData={getData}
+        loading={loading}
+        selectedCity={selectedCity}
+        setSelectedCity={setSelectedCity}
+      />
+
+      <div className="flex flex-1 overflow-hidden">
+        <AppSidebar
+          isOpen={isSidebarOpen}
+          data={data}
+          onItemClick={handleItemClick}
+        />
+
+        <main className="ml-64 mt-16 h-fit p-8 flex flex-col items-center justify-start snap-y snap-mandatory ">
+          {/* Section 1 */}
+          <div className="flex justify-center gap-8 w-full pb-8 mt-10 snap-start">
+            {/* First Div - Radar Chart */}
+            <div className="flex justify-center items-center border border-r-2 rounded-xl h-80 w-1/2 p-4">
               <RadarChart
                 data={data.slice(0, 5).map((item, index) => ({
-                  subject: `${formattedDates[index]}`, // Use the formatted date for the subject
+                  subject: `${formattedDates[index]}`,
                   A: item.air,
                   B: item.humidity,
                   fullMark: 500,
                 }))}
               />
             </div>
-            <div className="border border-r-2  mr-20 rounded-xl w-[50%] flex justify-center items-center border-white h-80 mx-14">
-              Carry an umbrella it might rain heavily today.
+
+            {/* Second Div - Weather Info */}
+            <div className="flex justify-center items-center border border-r-2 rounded-xl h-80 w-1/2 p-4">
+              Carry an umbrella; it might rain heavily today.
             </div>
           </div>
 
@@ -202,7 +239,6 @@ function App() {
                     pathTransitionDuration: 1.5,
                     textSize: "8px",
                     pathColor: `url(#customGradient)`,
-
                   })}
                 />
               </div>
@@ -216,7 +252,6 @@ function App() {
                     pathTransitionDuration: 1.5,
                     textSize: "8px",
                     pathColor: `url(#customGradient)`,
-
                   })}
                 />
               </div>
@@ -234,7 +269,6 @@ function App() {
                     pathTransitionDuration: 1.5,
                     textSize: "8px",
                     pathColor: `url(#customGradient)`,
-
                   })}
                 />
               </div>
@@ -255,40 +289,56 @@ function App() {
               </div>
             </div>
           </div>
-          <div className="flex justify-evenly pb-8 pt-8">
-            <div className="pl-16 ml-3 border-2 rounded-xl bg-[#d1d1d1]">
+          {/* Section 2 */}
+          {/* First Row */}
+          <div className="flex justify-center gap-8 pb-8 pt-8 mt-20 snap-start">
+            <div className="border-2 rounded-xl bg-[#d1d1d1] w-1/2 py-2 px-6 flex flex-col items-center justify-center">
               <MarkOptimization
-                dates={formattedDates.map((date) =>
-                  parseInt(date.split("/")[0], 10)
-                )} // Extract day (DD) and convert to number
-                values={data.map((item) => item.altitude)}
+                // dates={formattedDates.map((date) =>
+                //   parseInt(date.split("/")[0], 10)
+                // )}
+                values={data.map((item) => parseFloat(item.altitude.toFixed(2)))}
               />
+              <div className="text-2xl font-black text-black">
+                Altitude
+              </div>
             </div>
-            <div className="pr-16 ml-3 border-2 rounded-xl bg-[#d1d1d1]">
+            <div className="border-2 rounded-xl bg-[#d1d1d1] w-1/2 p-4 flex flex-col items-center justify-center">
               <MarkOptimization
-                dates={formattedDates.map((date) =>
-                  parseInt(date.split("/")[0], 10)
-                )} // Extract day (DD) and convert to number
+                // dates={formattedDates.map((date) =>
+                //   parseInt(date.split("/")[0], 10)
+                // )}
                 values={data.map((item) => item.temperature)}
               />
+              <div className="text-2xl font-black text-black">
+                Humidity
+              </div>
             </div>
           </div>
-          <div className="flex justify-evenly pb-8 pt-8">
-            <div className="pl-16 ml-3 border-2 rounded-xl bg-[#d1d1d1]">
+
+          {/* Second Row */}
+          <div className="flex justify-center gap-8 pb-8 pt-8">
+            <div className="border-2 rounded-xl bg-[#d1d1d1] w-1/2 p-6 flex flex-col justify-center items-center">
               <MarkOptimization
-                dates={formattedDates.map((date) =>
-                  parseInt(date.split("/")[0], 10)
-                )} // Extract day (DD) and convert to number
+                // dates={formattedDates.map((date) =>
+                //   parseInt(date.split("/")[0], 10)
+                // )}
                 values={data.map((item) => item.pressure)}
               />
+              <div className="text-2xl font-black text-black">
+                Pressure
+              </div>
             </div>
-            <div className="pr-16 ml-3 border-2 rounded-xl bg-[#d1d1d1]">
+            <div className="border-2 rounded-xl bg-[#d1d1d1] w-1/2 p-4 flex flex-col items-center justify-center">
               <MarkOptimization
-                dates={formattedDates.map((date) =>
-                  parseInt(date.split("/")[1], 10)
-                )} // Extract day (DD) and convert to number
+                // dates={formattedDates.map((date) =>
+                //   parseInt(date.split("/")[0], 10)
+                // )}
                 values={data.map((item) => item.humidity)}
               />
+              <div className="text-2xl font-black text-black">
+                Temperature
+              </div>
             </div>
           </div>
         </main>
@@ -310,8 +360,8 @@ function App() {
               <stop offset="100%" stopColor="rgba(113,63,254,1)" />
             </linearGradient>
           </defs>
-        </svg> 
-      </SidebarProvider>
+        </svg>
+      </div>
     </div>
   );
 }

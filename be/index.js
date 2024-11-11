@@ -3,11 +3,14 @@ import express from "express";
 import Data from "./Schema.js";
 import cors from "cors";
 
-const uri =
-  "mongodb+srv://imrankh8602:webarebears@cluster0.p3igy.mongodb.net/myDB";
+
+const uri = process.env.MONGO_URI ||
+  "default";
 const app = express();
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+const PORT = process.env.PORT;
 
 const connectToDatabase = async () => {
   try {
@@ -17,8 +20,8 @@ const connectToDatabase = async () => {
     console.log("Connected to database");
 
     // Start server only after successful connection
-    app.listen(3000, () => {
-      console.log("Server is running on port 3000");
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
     });
   } catch (error) {
     console.log("Error connecting to database", error);
@@ -60,7 +63,9 @@ app.post("/add", async (req, res) => {
 
 app.get("/get", async (req, res) => {
   try {
+    console.log("GET request received");
     const data = await Data.find().limit(30); // Limit results to 30 documents
+    console.log(data)
     res.status(200).json(data);
   } catch (error) {
     res.status(404).json({ message: error.message });
