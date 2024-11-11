@@ -37,7 +37,7 @@ export default function MarkOptimization({
       ]} // Use the passed `dates` prop
       series={[
         {
-          data: values.splice(0, 10), // Use the passed `values` prop (humidity in this case)
+          data: values, // Use the passed `values` prop (humidity in this case)
           showMark: ({ index }) => index % 2 === 0, // Optional: Show marks on even-indexed points
           
         },
